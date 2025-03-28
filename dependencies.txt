@@ -1,0 +1,5 @@
+whisper
+spacy==3.8.4
+opencv-python
+numpy
+ffmpeg-python
