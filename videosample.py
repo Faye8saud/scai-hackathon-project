@@ -24,56 +24,57 @@ import os
 import subprocess
 from google.colab import files
 
-# Step 1: Upload Video File
+# تنزيل مقطع الفيديو
 uploaded = files.upload()
 video_filename = list(uploaded.keys())[0]
 
-# Step 2: Transcribe Video Using Whisper
+# قراءة النص باستخدام whisperAi
 model = whisper.load_model("medium")
 result = model.transcribe(video_filename)
 transcription_text = result["text"]
 
-# Save transcription
+# حفظ النص 
 with open("transcription.txt", "w") as file:
     file.write(transcription_text)
 
 print("Transcription Done!")
 
-# Step 3: Process Text with spaCy
+# المعالجة باستخدامspaCy
 nlp = spacy.load("en_core_web_sm")
 doc = nlp(transcription_text)
 
-# Step 4: Define Icons and Search Terms
+# تعريف الايقونات (الرسومات) 
 icons = {
-    "ضربة جزاء": "warning.png",
-    "ضربة الجزاء": "warning.png",
-    "الضربه": "warning.png",
-    "الجزاء ": "warning.png",
-    "هات تريك": "warning.png",
-    "ركلة جزاء": "warning.png",
-    "لمسة يد": "warning.png",
-    "ركنية": "warning.png",
-    "الركنية": "warning.png",
-    "ركنيه": "warning.png",
-    "ريمنتادا": "warning.png",
-    "ريمونتادا": "warning.png",
-    "ريمون تادا ": "warning.png",
-    "الريمون تادا": "warning.png",
-    "تسلل": "warning.png",
-    "لمسة": "warning.png",
-    "لمسة يد ": "warning.png",
-    "لمسه يد": "warning.png",
+   # "ضربة جزاء": "warning.png",
+   # "ضربة الجزاء": "warning.png",
+   # "الضربه": "warning.png",
+  #  "الجزاء ": "warning.png",
+    "هات تريك": "hatrick.png",
+    "هاتريك": "hatrick.png",
+  #  "ركلة جزاء": "warning.png",
+    "لمسة يد": "lamsah.png",
+    "ركنية": "ruknya.png",
+    "الركنية": "ruknya.png",
+    "ركنيه": "ruknya.png",
+    "ريمنتادا": "remontada.png",
+    "ريمونتادا": "remontada.png",
+    "ريمون تادا ": "remontada.png",
+    "الريمون تادا": "remontada.png",
+    "تسلل": "offside.png",
+    "لمسة": "lamsah.png",
+    "لمسة يد ": "lamsah.png",
+    "لمسه يد": "lamsah.png",
     "انذار": "warning.png",
     "الانذار": "warning.png",
-    "صافرة": "warning.png",
-    "المرتدة": "warning.png",
-    "مرتدة": "warning.png",
-    "مرتده": "warning.png",
-    "المرتده": "warning.png",
-    "التسلل": "warning.png",
+   # "صافرة": "warning.png",
+   # "المرتدة": "warning.png",
+   # "مرتدة": "warning.png",
+   #"مرتده": "warning.png",
+   # "المرتده": "warning.png",
+    "التسلل": "offside.png",
 }
 
-# Ensure all words from icons are in search_terms
+# التحقق ان جميع الكلمات من الرسومات في جمل البحثcheck if all words from icons are in search_terms
 search_terms = list(icons.keys())
 
 timestamps = []
@@ -82,12 +83,12 @@ for segment in result["segments"]:
     start_time = segment["start"]
 
     for term in search_terms:
-        if term in text:  # Check if the word/phrase appears
+        if term in text:  # التحقق من ظهور الكلمات والجمل Check if the word/phrase appears
             timestamps.append((term, start_time))
 
 print("Words & Phrases Found:", timestamps)
 
-# Step 5: Process Video with OpenCV
+# معالجة المقطع باستخدام openCV
 cap = cv2.VideoCapture(video_filename)
 fps = int(cap.get(cv2.CAP_PROP_FPS))
 frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -97,26 +98,25 @@ frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 temp_video = "temp_output.mp4"
 out = cv2.VideoWriter(temp_video, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
 
-# Load & Resize Icons
+# التحكم في تنزيل وحجم الرسومات
 for key in icons:
     icons[key] = cv2.imread(icons[key], cv2.IMREAD_UNCHANGED)
-    icons[key] = cv2.resize(icons[key], (150, 150))
+    icons[key] = cv2.resize(icons[key], (160, 150))
 
 frame_number = 0
-icon_display_time = 4  # Show icons for 4 seconds
+icon_display_time = 4  # لعرض الرسومات لاربع ثواني
 
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
         break
 
-    current_time = frame_number / fps  # Convert frame count to seconds
-
+    current_time = frame_number / fps  # تحويل الفواصل الزمنية لثواني
     for term, timestamp in timestamps:
-        if timestamp <= current_time < timestamp + icon_display_time:  # Display for 4 seconds
+        if timestamp <= current_time < timestamp + icon_display_time:  # العرض لاربع ثواني
             if term in icons:
                 icon = icons[term]
-                x, y = frame_width - 170, frame_height - 170  # Bottom-right position
+                x, y = frame_width - 160, frame_height - 150  # موقع الرسومات
 
                 h, w, _ = icon.shape
                 for c in range(3):
@@ -132,13 +132,13 @@ cap.release()
 out.release()
 cv2.destroyAllWindows()
 
-print("Processing Done! Now merging audio...")
+print("Processing Done, Now merging audio...")
 
-# Step 6: Merge Original Audio with Processed Video Using FFmpeg
+#  FFmpeg اعادة دمج الصوت مع الفيديو باستخدام٪
 output_filename = "output_video.mp4"
 subprocess.run([
     "ffmpeg", "-i", temp_video, "-i", video_filename, "-c:v", "copy", "-c:a", "aac", "-strict", "experimental", "-map", "0:v:0", "-map", "1:a:0", output_filename, "-y"
 ])
 
-# Step 7: Provide Download Link for Output Video
+# تحميل المقطع النهائي download final video
 files.download(output_filename)
